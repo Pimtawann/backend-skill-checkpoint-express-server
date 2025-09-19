@@ -5,19 +5,15 @@ import { validateCreateAnswer } from "../middlewares/answer.validation.mjs";
 const answerRouter = Router();
 
 answerRouter.post("/:questionId/answers", validateCreateAnswer, async (req, res) => {
+    const questionIdFromClient = req.params.questionId;
     const newAnswer = {
         ...req.body
     }
-
     try {
         const results = await connectionPool.query(
             `insert into answers (question_id, content)
             values ($1, $2)`,
-            [
-                202,
-                newAnswer.content,
-            ]
-        );
+            [questionIdFromClient, newAnswer.content]);
 
         if(results.rowCount === 0){
             return res.status(404).json({
@@ -51,7 +47,7 @@ answerRouter.get("/:questionId/answers", async (req, res) => {
         }
 
         return res.status(200).json({
-            data: results.rows[0],
+            data: results.rows,
         })
 
     } catch {
